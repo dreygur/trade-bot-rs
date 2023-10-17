@@ -1,4 +1,8 @@
-use web3::futures::{future, StreamExt};
+use web3::{
+  futures::{future, StreamExt},
+  types::BlockHeader,
+  Error,
+};
 
 #[tokio::main]
 async fn main() -> web3::Result<()> {
@@ -18,8 +22,8 @@ async fn main() -> web3::Result<()> {
         Err(_err) => false,
       })
     })
-    .for_each(|x| {
-      println!("Got: {:?}", x);
+    .for_each(|x: Result<BlockHeader, web3::Error>| {
+      process_event(x);
       future::ready(())
     })
     .await;
@@ -27,4 +31,8 @@ async fn main() -> web3::Result<()> {
   sub.unsubscribe().await?;
 
   Ok(())
+}
+
+fn process_event(data: Result<BlockHeader, Error>) {
+  println!("Got: {:?}", data);
 }
